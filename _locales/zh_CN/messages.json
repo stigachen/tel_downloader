@@ -1,0 +1,120 @@
+{
+  "appName": {
+    "message": "Telegram 视频下载助手"
+  },
+  "appDescription": {
+    "message": "一个简单易用的 Telegram Web 视频下载工具"
+  },
+  "downloadProgress": {
+    "message": "下载进度"
+  },
+  "about": {
+    "message": "关于"
+  },
+  "version": {
+    "message": "版本"
+  },
+  "author": {
+    "message": "作者"
+  },
+  "viewOnGithub": {
+    "message": "在 GitHub 上查看源码"
+  },
+  "preparingDownload": {
+    "message": "准备下载..."
+  },
+  "downloadFailed": {
+    "message": "下载失败"
+  },
+  "retry": {
+    "message": "重试"
+  },
+  "retrying": {
+    "message": "重试中..."
+  },
+  "noDownloads": {
+    "message": "没有正在下载的视频"
+  },
+  "estimatedTimeRemaining": {
+    "message": "预计还需要 $TIME$",
+    "placeholders": {
+      "time": {
+        "content": "$1"
+      }
+    }
+  },
+  "communicationError": {
+    "message": "无法与页面通信，请刷新页面后重试"
+  },
+  "calculating": {
+    "message": "计算中..."
+  },
+  "updateError": {
+    "message": "更新下载进度失败: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "settings": {
+    "message": "设置"
+  },
+  "language": {
+    "message": "语言"
+  },
+  "languageZhCN": {
+    "message": "简体中文"
+  },
+  "languageEn": {
+    "message": "英语"
+  },
+  "timeSeconds": {
+    "message": "$COUNT$秒",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "timeMinutes": {
+    "message": "$COUNT$分钟",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "timeHoursMinutes": {
+    "message": "$HOURS$小时$MINUTES$分钟",
+    "placeholders": {
+      "hours": {
+        "content": "$1"
+      },
+      "minutes": {
+        "content": "$2"
+      }
+    }
+  },
+  "maxConcurrentDownloads": {
+    "message": "最大同时下载数"
+  },
+  "concurrentDownloads_1": {
+    "message": "1个下载"
+  },
+  "concurrentDownloads_2": {
+    "message": "2个下载"
+  },
+  "concurrentDownloads_3": {
+    "message": "3个下载"
+  },
+  "concurrentDownloads_4": {
+    "message": "4个下载"
+  },
+  "concurrentDownloads_5": {
+    "message": "5个下载"
+  },
+  "waiting": {
+    "message": "等待中..."
+  }
+} 

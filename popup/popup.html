@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title data-i18n="appName"></title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <div class="tab-buttons">
+      <button class="tab-button active" data-tab="downloads" data-i18n="downloadProgress"></button>
+      <button class="tab-button" data-tab="settings" data-i18n="settings"></button>
+      <button class="tab-button" data-tab="about" data-i18n="about"></button>
+    </div>
+    <div class="tab-panels">
+      <div id="downloads" class="tab-panel active">
+        <div id="download-list"></div>
+      </div>
+      <div id="settings" class="tab-panel">
+        <div class="settings-content">
+          <div class="settings-group">
+            <label class="settings-label" data-i18n="maxConcurrentDownloads"></label>
+            <select id="max-downloads-select" class="settings-select">
+              <option value="1" data-i18n="concurrentDownloads_1"></option>
+              <option value="2" data-i18n="concurrentDownloads_2"></option>
+              <option value="3" data-i18n="concurrentDownloads_3"></option>
+              <option value="4" data-i18n="concurrentDownloads_4"></option>
+              <option value="5" data-i18n="concurrentDownloads_5"></option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div id="about" class="tab-panel">
+        <div class="about-content">
+          <div class="app-icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="var(--button-bg)">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/>
+            </svg>
+          </div>
+          <h2 class="app-name" data-i18n="appName"></h2>
+          <div class="app-version"><span data-i18n="version"></span> 1.0.0</div>
+          <div class="app-description" data-i18n="appDescription"></div>
+          <div class="app-author">
+            <span data-i18n="author"></span>：<a href="https://github.com/yourusername" target="_blank">@yourusername</a>
+          </div>
+          <div class="app-links">
+            <a href="https://github.com/yourusername/your-repo" target="_blank" class="github-link" data-i18n="viewOnGithub"></a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html> 

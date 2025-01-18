@@ -1,0 +1,10 @@
+telegram-video-downloader/
+├── manifest.json
+├── popup/
+│   ├── popup.html
+│   ├── popup.css
+│   └── popup.js
+├── background/
+│   └── background.js
+└── content/
+    └── content.js 

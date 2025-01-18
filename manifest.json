@@ -1,0 +1,37 @@
+{
+  "manifest_version": 3,
+  "name": "Telegram Video Downloader",
+  "version": "1.0",
+  "description": "下载Telegram Web群聊中的视频",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "downloads",
+    "storage",
+    "management"
+  ],
+  "host_permissions": [
+    "https://web.telegram.org/*",
+    "https://*.telegram.org/*"
+  ],
+  "action": {
+    "default_popup": "popup/popup.html"
+  },
+  "background": {
+    "service_worker": "background/background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://web.telegram.org/*"],
+      "js": ["content/content.js"],
+      "run_at": "document_end"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["content/telegram_download_helper.js"],
+      "matches": ["*://web.telegram.org/*"]
+    }
+  ],
+  "default_locale": "en"
+} 

@@ -1,0 +1,137 @@
+{
+  "appName": {
+    "message": "Telegram Video Downloader"
+  },
+  "appDescription": {
+    "message": "A simple tool for downloading Telegram Web videos"
+  },
+  "downloadProgress": {
+    "message": "Download Progress"
+  },
+  "about": {
+    "message": "About"
+  },
+  "version": {
+    "message": "Version"
+  },
+  "author": {
+    "message": "Author"
+  },
+  "viewOnGithub": {
+    "message": "View on GitHub"
+  },
+  "preparingDownload": {
+    "message": "Preparing download..."
+  },
+  "downloadFailed": {
+    "message": "Download failed, click to retry"
+  },
+  "retry": {
+    "message": "Retry"
+  },
+  "retrying": {
+    "message": "Retrying..."
+  },
+  "noDownloads": {
+    "message": "No active downloads"
+  },
+  "estimatedTimeRemaining": {
+    "message": "Estimated time remaining: $TIME$",
+    "placeholders": {
+      "time": {
+        "content": "$1"
+      }
+    }
+  },
+  "communicationError": {
+    "message": "Cannot communicate with the page, please refresh and try again"
+  },
+  "calculating": {
+    "message": "calculating..."
+  },
+  "updateError": {
+    "message": "Failed to update download progress: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "settings": {
+    "message": "Settings"
+  },
+  "language": {
+    "message": "Language"
+  },
+  "languageZhCN": {
+    "message": "Chinese (Simplified)"
+  },
+  "languageEn": {
+    "message": "English"
+  },
+  "downloadVideo": {
+    "message": "Download Video"
+  },
+  "downloadInProgress": {
+    "message": "Downloading: $PROGRESS$% - $TIME$ remaining",
+    "placeholders": {
+      "progress": {
+        "content": "$1"
+      },
+      "time": {
+        "content": "$2"
+      }
+    }
+  },
+  "downloadQueued": {
+    "message": "Waiting to download..."
+  },
+  "timeSeconds": {
+    "message": "$COUNT$ seconds",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "timeMinutes": {
+    "message": "$COUNT$ minutes",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "timeHoursMinutes": {
+    "message": "$HOURS$ hours $MINUTES$ minutes",
+    "placeholders": {
+      "hours": {
+        "content": "$1"
+      },
+      "minutes": {
+        "content": "$2"
+      }
+    }
+  },
+  "maxConcurrentDownloads": {
+    "message": "Maximum concurrent downloads"
+  },
+  "concurrentDownloads_1": {
+    "message": "1 download"
+  },
+  "concurrentDownloads_2": {
+    "message": "2 downloads"
+  },
+  "concurrentDownloads_3": {
+    "message": "3 downloads"
+  },
+  "concurrentDownloads_4": {
+    "message": "4 downloads"
+  },
+  "concurrentDownloads_5": {
+    "message": "5 downloads"
+  },
+  "waiting": {
+    "message": "Waiting..."
+  }
+} 
