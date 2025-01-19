@@ -3,6 +3,11 @@
   "name": "Telegram Video Downloader",
   "version": "1.0",
   "description": "Download videos from group chats on Telegram Web",
+  "icons": {
+    "16": "images/icon16.png",
+    "48": "images/icon48.png",
+    "128": "images/icon128.png"
+  },
   "permissions": [
     "activeTab",
     "scripting",
@@ -15,6 +20,11 @@
     "https://*.telegram.org/*"
   ],
   "action": {
+    "default_icon": {
+      "16": "images/icon16.png",
+      "48": "images/icon48.png",
+      "128": "images/icon128.png"
+    },
     "default_popup": "popup/popup.html"
   },
   "background": {
