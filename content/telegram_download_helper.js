@@ -59,7 +59,7 @@ window.initTelegramDownloader = function() {
     // 修改并发下载控制
     let MAX_CONCURRENT_DOWNLOADS = 1;  // 默认值为1
     const activeDownloads = new Set();
-
+    
     // 初始化时读取最大并发下载数
     //chrome.storage.local.get(['maxConcurrentDownloads'], function(result) {
     //    MAX_CONCURRENT_DOWNLOADS = result.maxConcurrentDownloads || 1;
@@ -77,7 +77,8 @@ window.initTelegramDownloader = function() {
             ...state,
             lastUpdated: Date.now(),
             progress: state.status === 'error' ? 0 : (state.progress || previousState?.progress || 0),
-            inProgress: state.status === 'error' ? false : (state.inProgress ?? previousState?.inProgress)
+            inProgress: state.status === 'error' ? false : (state.inProgress ?? previousState?.inProgress),
+            needRestarted: state.needRestarted !== undefined ? state.needRestarted : previousState?.needRestarted
         };
 
         window.downloadStates.set(videoSrc, newState);
@@ -122,6 +123,19 @@ window.initTelegramDownloader = function() {
         let speedArray = [];
         
         while (downloaded < totalSize) {
+            // 检查是否被重新放回等待队列(伪暂停), 如果是, 则直接返回   
+            const existingState = window.downloadStates.get(url);
+            if (existingState && existingState.needRestarted) {
+                updateDownloadState(url, {
+                    status: 'queued',
+                    progress: 0,
+                    timeRemaining: getI18nMessage('waiting'),
+                    inProgress: true,
+                    needRestarted: false
+                });
+                return new Blob([]);
+            }
+
             const end = Math.min(downloaded + chunkSize - 1, totalSize - 1);
             const rangeHeaders = new Headers(headers);
             rangeHeaders.set('Range', `bytes=${downloaded}-${end}`);
@@ -286,6 +300,9 @@ window.initTelegramDownloader = function() {
 
                 // 下载视频
                 const blob = await downloadInChunks(videoSrc, headers, videoData.size);
+                if (blob.size === 0) {
+                    return true;
+                }
 
                 // 创建下载链接 + 触发浏览器下载行为
                 const url = window.URL.createObjectURL(blob);
@@ -353,14 +370,31 @@ window.initTelegramDownloader = function() {
 
     // 添加最大下载数更新消息监听
     window.addEventListener('message', async (event) => {
-    //window.addEventListener('message', (event) => {
-        if (event.data.type === 'UPDATE_MAX_DOWNLOADS') {
-            MAX_CONCURRENT_DOWNLOADS = event.data.value;
-            console.log('Updated max concurrent downloads:', MAX_CONCURRENT_DOWNLOADS);
-            // 检查是否可以开始新的下载
-            processNextDownload();
-        }
-    });
+        //window.addEventListener('message', (event) => {
+            if (event.data.type === 'UPDATE_MAX_DOWNLOADS') {
+                MAX_CONCURRENT_DOWNLOADS = event.data.value;
+                console.log('Updated max concurrent downloads:', MAX_CONCURRENT_DOWNLOADS);
+                if (MAX_CONCURRENT_DOWNLOADS > activeDownloads.size) {
+                    // 检查是否可以开始新的下载
+                    processNextDownload();
+                }
+                if (MAX_CONCURRENT_DOWNLOADS < activeDownloads.size) {
+                    // 从活跃下载中取出一个视频
+                    const videoSrc = Array.from(activeDownloads)[0];
+                    activeDownloads.delete(videoSrc);
+                    const existingState = window.downloadStates.get(videoSrc);
+                    // 重新放回等待队列
+                    downloadQueue.push(videoSrc);  // 添加到队列
+                    updateDownloadState(videoSrc, {
+                        status: 'queued',
+                        progress: 0,
+                        timeRemaining: getI18nMessage('waiting'),
+                        inProgress: true,
+                        needRestarted: true
+                    });
+                }
+            }
+        });
 };
 
 initTelegramDownloader(); 
