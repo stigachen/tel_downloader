@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Telegram Video Downloader",
   "version": "1.0",
-  "description": "下载Telegram Web群聊中的视频",
+  "description": "Download videos from group chats on Telegram Web",
   "permissions": [
     "activeTab",
     "scripting",
