@@ -324,4 +324,21 @@ document.addEventListener('DOMContentLoaded', function() {
             updateDownloadProgress();
         }
     }, 1000);
+});
+
+// 添加 popup 窗口加载监听
+window.addEventListener('load', async function() {
+    console.log('Popup window loaded');
+    
+    // 获取当前最大下载数设置
+    const maxDownloadsSelect = document.getElementById('max-downloads-select');
+    if (maxDownloadsSelect) {
+        const [tab] = await chrome.tabs.query({active: true, currentWindow: true});
+        if (tab) {
+            chrome.tabs.sendMessage(tab.id, {
+                action: "updateMaxDownloads", 
+                value: parseInt(maxDownloadsSelect.value)
+            });
+        }
+    }
 }); 

@@ -279,6 +279,10 @@ function addDownloadButton(videoElement) {
                 type: 'DOWNLOAD_VIDEO',
                 videoSrc: videoElement.src
             }, '*');
+
+            // 打开 popup 窗口
+            chrome.runtime.sendMessage({ action: "openPopup" });
+
         } catch (error) {
             console.error('Download error:', error);
             downloadBtn.disabled = false;
