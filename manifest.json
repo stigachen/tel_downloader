@@ -10,10 +10,8 @@
   },
   "permissions": [
     "activeTab",
-    "scripting",
     "downloads",
-    "storage",
-    "management"
+    "storage"
   ],
   "host_permissions": [
     "https://web.telegram.org/*",
