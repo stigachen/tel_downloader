@@ -133,5 +133,8 @@
   },
   "waiting": {
     "message": "Waiting..."
+  },
+  "buyMeCoffee": {
+    "message": "If you like my extension, buy me a cup of coffee"
   }
 } 
