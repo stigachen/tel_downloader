@@ -136,5 +136,8 @@
   },
   "buyMeCoffee": {
     "message": "If you like my extension, buy me a cup of coffee"
+  },
+  "useTelegramWeb": {
+    "message": "Please use this extension on Telegram Web page"
   }
 } 

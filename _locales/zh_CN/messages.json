@@ -119,5 +119,8 @@
   },
   "buyMeCoffee": {
     "message": "如果您喜欢这个扩展，请我喝杯咖啡"
+  },
+  "useTelegramWeb": {
+    "message": "请在Telegram Web页面使用此插件"
   }
 } 

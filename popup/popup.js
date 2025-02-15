@@ -21,7 +21,7 @@ async function loadVideoList() {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     if (!tab.url.includes('web.telegram.org')) {
         const videoList = document.getElementById('video-list');
-        videoList.innerHTML = '<div class="empty-message">请在Telegram Web页面使用此插件</div>';
+        videoList.innerHTML = `<div class="empty-message">${chrome.i18n.getMessage("useTelegramWeb")}</div>`;
         return;
     }
 
@@ -93,7 +93,7 @@ async function updateDownloadProgress() {
 
         if (!tab.url.includes('web.telegram.org')) {
             const downloadList = document.getElementById('download-list');
-            downloadList.innerHTML = '<div class="empty-message">请在Telegram Web页面使用此插件</div>';
+            downloadList.innerHTML = `<div class="empty-message">${chrome.i18n.getMessage("useTelegramWeb")}</div>`;
             return;
         }
 
