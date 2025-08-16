@@ -218,7 +218,13 @@ window.initTelegramDownloader = function() {
             // });
         }
 
-        return new Blob(chunks, { type: chunks[0].type });
+        // 确定MIME类型
+        let mimeType = 'video/mp4'; // 默认类型
+        if (chunks.length > 0 && chunks[0].type) {
+            mimeType = chunks[0].type;
+        }
+        
+        return new Blob(chunks, { type: mimeType });
     }
 
     // 添加下载队列
@@ -265,23 +271,44 @@ window.initTelegramDownloader = function() {
 
             // 解析视频信息
             console.log('Starting download process for:', videoSrc);
-            const match = videoSrc.match(/stream\/(.*)/);
-            if (!match) {
+            
+            let videoData = {};
+            let fileName = 'video.mp4';
+            
+            // 检查是k版本还是a版本的URL格式
+            const streamMatch = videoSrc.match(/stream\/(.*)/);
+            const progressiveMatch = videoSrc.match(/progressive\/document(\d+)/);
+            
+            if (streamMatch) {
+                // k版本：从URL中解析JSON数据
+                const jsonStr = decodeURIComponent(streamMatch[1]);
+                videoData = JSON.parse(jsonStr);
+                fileName = videoData.fileName || 'video.mp4';
+                console.log('Parsed k version video data:', videoData);
+            } else if (progressiveMatch) {
+                // a版本：从document ID生成文件名
+                const docId = progressiveMatch[1];
+                fileName = `video_${docId}.mp4`;
+                videoData = { 
+                    fileName: fileName,
+                    documentId: docId,
+                    isAVersion: true
+                };
+                console.log('Parsed a version video data:', videoData);
+            } else {
                 throw new Error('Invalid video URL format');
             }
 
-            const jsonStr = decodeURIComponent(match[1]);
-            const videoData = JSON.parse(jsonStr);
-            console.log('Parsed video data:', videoData);
-
-            // 构建新的请求头
+            // 构建新的请求头，根据版本设置正确的Referer
+            const referer = videoData.isAVersion ? 'https://web.telegram.org/a/' : 'https://web.telegram.org/k/';
+            
             const headers = new Headers({
                 'Accept': 'video/webm,video/ogg,video/*;q=0.9,application/ogg;q=0.7,audio/*;q=0.6,*/*;q=0.5',
                 'Accept-Encoding': 'identity',
                 'Accept-Language': 'en-US,en;q=0.9',
                 'Cache-Control': 'no-cache',
                 'Pragma': 'no-cache',
-                'Referer': 'https://web.telegram.org/k/',
+                'Referer': referer,
                 'Origin': 'https://web.telegram.org',
                 'Sec-Fetch-Dest': 'video',
                 'Sec-Fetch-Mode': 'cors',
@@ -298,8 +325,99 @@ window.initTelegramDownloader = function() {
                     inProgress: true
                 });
 
+                // 检查是否为a版本，如果是则使用tel_download_video函数
+                if (videoData.isAVersion) {
+                    console.log('Processing a version video - using tel_download_video function');
+                    
+                    // 更新状态为准备中
+                    updateDownloadState(videoSrc, {
+                        status: 'starting',
+                        progress: 0,
+                        timeRemaining: '开始下载...',
+                        inProgress: true
+                    });
+
+                    try {
+                        // 创建唯一的下载ID用于监听进度
+                        const downloadId = `download_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+                        
+                        // 监听下载进度事件
+                        const progressHandler = (event) => {
+                            const progress = parseInt(event.detail.progress);
+                            console.log(`Download progress: ${progress}%`);
+                            
+                            updateDownloadState(videoSrc, {
+                                status: 'downloading',
+                                progress: progress,
+                                timeRemaining: progress < 100 ? '下载中...' : '即将完成',
+                                inProgress: progress < 100
+                            });
+
+                            // 发送进度消息
+                            window.postMessage({
+                                type: 'DOWNLOAD_PROGRESS',
+                                progress: progress,
+                                completed: progress >= 100,
+                                videoSrc: videoSrc
+                            }, '*');
+
+                            // 如果下载完成，移除事件监听器
+                            if (progress >= 100) {
+                                document.removeEventListener(downloadId + '_video_download_progress', progressHandler);
+                                
+                                // 更新最终状态
+                                updateDownloadState(videoSrc, {
+                                    status: 'completed',
+                                    progress: 100,
+                                    timeRemaining: '',
+                                    inProgress: false
+                                });
+                            }
+                        };
+
+                        // 添加进度监听器
+                        document.addEventListener(downloadId + '_video_download_progress', progressHandler);
+                        
+                        // 调用tel_download_video函数
+                        if (typeof tel_download_video === 'function') {
+                            tel_download_video(videoSrc, downloadId);
+                        } else {
+                            throw new Error('tel_download_video function not available');
+                        }
+
+                        return true;
+
+                    } catch (error) {
+                        console.error('A version download error:', error);
+                        
+                        // 更新状态为错误
+                        updateDownloadState(videoSrc, {
+                            status: 'error',
+                            progress: 0,
+                            timeRemaining: '下载失败',
+                            inProgress: false
+                        });
+
+                        window.postMessage({
+                            type: 'DOWNLOAD_PROGRESS',
+                            progress: 0,
+                            error: true,
+                            videoSrc: videoSrc
+                        }, '*');
+
+                        throw error;
+                    }
+                }
+
+                // 对于k版本，继续使用原来的方法
+                // k版本的videoData应该包含文件大小信息
+                const fileSize = videoData.size;
+                if (!fileSize) {
+                    throw new Error('K version video data missing size information');
+                }
+
                 // 下载视频
-                const blob = await downloadInChunks(videoSrc, headers, videoData.size);
+                const blob = await downloadInChunks(videoSrc, headers, fileSize);
                 if (blob.size === 0) {
                     return true;
                 }
@@ -308,7 +426,7 @@ window.initTelegramDownloader = function() {
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = videoData.fileName || 'video.mp4';
+                a.download = fileName;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);

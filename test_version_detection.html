@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Version Detection Test</title>
+</head>
+<body>
+    <h1>Telegram Version Detection Test</h1>
+    
+    <div id="test-results"></div>
+    
+    <script>
+        // 模拟版本检测功能
+        function detectTelegramVersion() {
+            // 检测URL路径
+            const path = window.location.pathname;
+            if (path.includes('/k')) {
+                return 'k';
+            } else if (path.includes('/a')) {
+                return 'a';
+            }
+            
+            // 如果URL路径不明确，通过DOM结构检测
+            // k版本特有的元素
+            if (document.querySelector('.tgico') || document.querySelector('[class*="MessageList"]')) {
+                return 'k';
+            }
+            
+            // a版本特有的元素
+            if (document.querySelector('.im_page_wrap') || document.querySelector('.im_history_messages')) {
+                return 'a';
+            }
+            
+            // 默认返回k版本（向后兼容）
+            return 'k';
+        }
+        
+        // 测试不同的URL和DOM场景
+        function runTests() {
+            const results = document.getElementById('test-results');
+            
+            results.innerHTML = `
+                <h2>Test Results:</h2>
+                <p>Current URL: ${window.location.href}</p>
+                <p>Detected Version: ${detectTelegramVersion()}</p>
+                <p>Path includes /k: ${window.location.pathname.includes('/k')}</p>
+                <p>Path includes /a: ${window.location.pathname.includes('/a')}</p>
+                <p>Has .tgico: ${!!document.querySelector('.tgico')}</p>
+                <p>Has .im_page_wrap: ${!!document.querySelector('.im_page_wrap')}</p>
+            `;
+        }
+        
+        // 运行测试
+        runTests();
+    </script>
+</body>
+</html>

@@ -1,3 +1,24 @@
+// 版本检测功能（仅用于日志）
+function detectTelegramVersion() {
+    const path = window.location.pathname;
+    console.log('Current path:', path);
+    
+    if (path.includes('/k') || path === '/k' || path.startsWith('/k/')) {
+        console.log('Running on Telegram Web K version');
+        return 'k';
+    } else if (path.includes('/a') || path === '/a' || path.startsWith('/a/')) {
+        console.log('Running on Telegram Web A version');
+        return 'a';
+    }
+    
+    console.log('Running on Telegram Web (version unknown, using universal selectors)');
+    return 'unknown';
+}
+
+// 检测当前版本（仅用于日志）
+const currentVersion = detectTelegramVersion();
+
+
 // 添加下载按钮的样式
 const style = document.createElement('style');
 style.textContent = `
@@ -11,13 +32,14 @@ style.textContent = `
         border-radius: 4px;
         padding: 5px 10px;
         cursor: pointer;
-        z-index: 9999;
+        z-index: 99999;
         display: none;
         font-size: 12px;
         font-family: Arial, sans-serif;
         min-width: 120px;
         text-align: center;
         white-space: nowrap;
+        pointer-events: auto;
     }
     .telegram-video-download-btn.downloading {
         background: rgba(0, 0, 0, 0.8);
@@ -39,6 +61,11 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+// 注入下载函数脚本
+const downloadScript = document.createElement('script');
+downloadScript.src = chrome.runtime.getURL('content/web_telegram_inject_for_download.js');
+(document.head || document.documentElement).appendChild(downloadScript);
 
 // 注入下载助手脚本
 const helperScript = document.createElement('script');
@@ -167,8 +194,9 @@ const videoThumbnails = new Map();
 
 // 修改 addDownloadButton 函数
 function addDownloadButton(videoElement) {
-    // 确保视频元素有效
-    if (!videoElement || !videoElement.src || !videoElement.src.includes('stream')) {
+    // 确保视频元素有效，支持两种URL格式
+    if (!videoElement || !videoElement.src || 
+        (!videoElement.src.includes('stream') && !videoElement.src.includes('/progressive/document'))) {
         return;
     }
 
@@ -179,11 +207,14 @@ function addDownloadButton(videoElement) {
     // 检查是否已经添加过下载按钮
     if (wrapper.querySelector('.telegram-video-download-btn')) return;
 
-    // 获取并存储缩略图URL
-    const messageContainer = videoElement.closest('.Message') || 
-                           videoElement.closest('.message');
+    // 获取消息容器和缩略图（两个版本都使用相同的选择器）
+    const messageContainer = videoElement.closest('.Message') || videoElement.closest('[data-message-id]');
+    
     if (messageContainer) {
-        const thumbnailImg = messageContainer.querySelector('img.media-photo, img.thumbnail, img[class*="preview"]');
+        const thumbnailImg = messageContainer.querySelector('img.thumbnail') || 
+                           messageContainer.querySelector('img.media-photo') ||
+                           messageContainer.querySelector('img[class*="preview"]');
+        
         if (thumbnailImg?.src) {
             // 通过消息传递缩略图信息
             window.postMessage({
@@ -194,7 +225,6 @@ function addDownloadButton(videoElement) {
         }
     }
 
-    console.log('Creating download button for video:', videoElement.src);
 
     // 确保包装元素有相对定位
     if (getComputedStyle(wrapper).position === 'static') {
@@ -274,10 +304,20 @@ function addDownloadButton(videoElement) {
                 thumbnailMapSize: videoThumbnails.size
             });
 
-            // 触发下载
+            // 触发下载，传递更多视频信息
             window.postMessage({
                 type: 'DOWNLOAD_VIDEO',
-                videoSrc: videoElement.src
+                videoSrc: videoElement.src,
+                videoInfo: {
+                    currentTime: videoElement.currentTime,
+                    duration: videoElement.duration,
+                    videoWidth: videoElement.videoWidth,
+                    videoHeight: videoElement.videoHeight,
+                    readyState: videoElement.readyState,
+                    networkState: videoElement.networkState,
+                    crossOrigin: videoElement.crossOrigin,
+                    currentSrc: videoElement.currentSrc
+                }
             }, '*');
 
             // 打开 popup 窗口
@@ -298,8 +338,15 @@ function addDownloadButton(videoElement) {
 
 // 定期检查新的视频元素
 function checkForNewVideos() {
+    // 使用更广泛的选择器，兼容两个版本
     const videos = document.querySelectorAll('video');
-    videos.forEach(addDownloadButton);
+    // 过滤出包含stream或progressive/document的视频
+    const streamVideos = Array.from(videos).filter(video => {
+        return video.src && (video.src.includes('stream') || 
+                           video.src.includes('/progressive/document') || 
+                           video.src.includes('blob:'));
+    });
+    streamVideos.forEach(addDownloadButton);
 }
 
 // 初始检查
@@ -367,11 +414,24 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         const states = Array.from(contentScriptDownloadStates.entries())
             .map(([videoSrc, state]) => {
                 try {
-                    const fileInfoStr = decodeURIComponent(videoSrc.split('stream/')[1]);
-                    const fileInfo = JSON.parse(fileInfoStr);
+                    let fileName = 'video.mp4';
+                    
+                    // 检查是k版本还是a版本的URL格式
+                    if (videoSrc.includes('stream/')) {
+                        // k版本：从URL中解析JSON数据
+                        const fileInfoStr = decodeURIComponent(videoSrc.split('stream/')[1]);
+                        const fileInfo = JSON.parse(fileInfoStr);
+                        fileName = fileInfo.fileName || 'video.mp4';
+                    } else if (videoSrc.includes('/progressive/document')) {
+                        // a版本：从document ID生成文件名
+                        const match = videoSrc.match(/progressive\/document(\d+)/);
+                        if (match) {
+                            fileName = `video_${match[1]}.mp4`;
+                        }
+                    }
                     
                     return {
-                        fileName: fileInfo.fileName || 'video.mp4',
+                        fileName: fileName,
                         progress: state.progress || 0,
                         timeRemaining: state.timeRemaining || '计算中',
                         inProgress: !!state.inProgress,
@@ -408,19 +468,31 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 function findTelegramVideos() {
     const videos = [];
 
-    // 查找所有视频元素
-    const videoElements = document.querySelectorAll('video[src*="stream"]');
+    // 查找所有视频元素（使用更广泛的搜索）
+    const allVideos = document.querySelectorAll('video');
+    const videoElements = Array.from(allVideos).filter(video => {
+        return video.src && (video.src.includes('stream') || 
+                           video.src.includes('/progressive/document') || 
+                           video.src.includes('blob:'));
+    });
+    
+    
     videoElements.forEach((video, index) => {
         const videoUrl = video.src;
-        if (!videoUrl || !videoUrl.includes('stream')) return;
+        if (!videoUrl || (!videoUrl.includes('stream') && 
+                          !videoUrl.includes('/progressive/document') && 
+                          !videoUrl.includes('blob:'))) return;
 
         // 获取视频缩略图
         let thumbnail = '';
-        // 尝试获取视频消息容器中的缩略图
-        const messageContainer = video.closest('[data-message-id]');
+        // 查找消息容器（两个版本都使用相同的选择器）
+        const messageContainer = video.closest('.Message') || video.closest('[data-message-id]');
+        
         if (messageContainer) {
-            // 查找消息中的缩略图
-            const thumbnailImg = messageContainer.querySelector('img.thumbnail');
+            const thumbnailImg = messageContainer.querySelector('img.thumbnail') || 
+                               messageContainer.querySelector('img.media-photo') ||
+                               messageContainer.querySelector('img[class*="preview"]');
+            
             if (thumbnailImg) {
                 thumbnail = thumbnailImg.src;
             } else {
@@ -437,10 +509,16 @@ function findTelegramVideos() {
             }
         }
 
+        // 获取消息ID（重用之前找到的容器）
+        const messageId = messageContainer?.dataset?.messageId || 
+                         messageContainer?.getAttribute('data-message-id') || 
+                         messageContainer?.id ||
+                         `msg_${Date.now()}_${videos.length}`;
+
         videos.push({
             id: videos.length,
             url: videoUrl,
-            messageId: video.closest('[data-message-id]')?.dataset.messageId,
+            messageId: messageId,
             timestamp: new Date().getTime(),
             thumbnail: thumbnail
         });

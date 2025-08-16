@@ -3,7 +3,7 @@
     "message": "Telegram 视频下载助手"
   },
   "appDescription": {
-    "message": "一个简单易用的 Telegram Web 视频下载工具"
+    "message": "从 Telegram Web 下载视频（支持 /k 和 /a 两个版本）"
   },
   "downloadProgress": {
     "message": "下载进度"
