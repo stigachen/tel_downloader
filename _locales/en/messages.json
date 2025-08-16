@@ -3,7 +3,7 @@
     "message": "Telegram Video Downloader"
   },
   "appDescription": {
-    "message": "A simple tool for downloading Telegram Web videos"
+    "message": "Download videos from Telegram Web (supports both /k and /a versions)"
   },
   "downloadProgress": {
     "message": "Download Progress"

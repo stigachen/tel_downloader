@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Telegram Video Downloader",
-  "version": "1.0",
-  "description": "Download videos from group chats on Telegram Web",
+  "version": "1.1",
+  "description": "Download videos from group chats on Telegram Web (supports both /k and /a versions)",
   "icons": {
     "16": "images/icon16.png",
     "48": "images/icon48.png",
@@ -14,6 +14,7 @@
     "storage"
   ],
   "host_permissions": [
+    "http://web.telegram.org/*",
     "https://web.telegram.org/*",
     "https://*.telegram.org/*"
   ],
@@ -30,15 +31,15 @@
   },
   "content_scripts": [
     {
-      "matches": ["*://web.telegram.org/*"],
+      "matches": ["http://web.telegram.org/*", "https://web.telegram.org/*"],
       "js": ["content/content.js"],
       "run_at": "document_end"
     }
   ],
   "web_accessible_resources": [
     {
-      "resources": ["content/telegram_download_helper.js"],
-      "matches": ["*://web.telegram.org/*"]
+      "resources": ["content/telegram_download_helper.js", "content/web_telegram_inject_for_download.js"],
+      "matches": ["http://web.telegram.org/*", "https://web.telegram.org/*"]
     }
   ],
   "default_locale": "en"
