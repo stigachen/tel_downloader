@@ -454,13 +454,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     } else if (request.action === "debugLog") {
         console.log('[Popup Debug]', request.message);
         return true;
-    } else if (request.action === "updateMaxDownloads") {
-        // 通过 postMessage 传递给 telegram_download_helper.js
-        window.postMessage({
-            type: 'UPDATE_MAX_DOWNLOADS',
-            value: request.value
-        }, '*');
-        sendResponse({ success: true });
     }
     return true;
 });

@@ -57,14 +57,9 @@ window.initTelegramDownloader = function() {
     }
 
     // 修改并发下载控制
-    let MAX_CONCURRENT_DOWNLOADS = 1;  // 默认值为1
+    const MAX_CONCURRENT_DOWNLOADS = Number.POSITIVE_INFINITY;
     const activeDownloads = new Set();
     
-    // 初始化时读取最大并发下载数
-    //chrome.storage.local.get(['maxConcurrentDownloads'], function(result) {
-    //    MAX_CONCURRENT_DOWNLOADS = result.maxConcurrentDownloads || 1;
-    //});
-
     // 简化的检查函数
     function canStartNewDownload() {
         return activeDownloads.size < MAX_CONCURRENT_DOWNLOADS;
@@ -486,33 +481,6 @@ window.initTelegramDownloader = function() {
         }
     });
 
-    // 添加最大下载数更新消息监听
-    window.addEventListener('message', async (event) => {
-        //window.addEventListener('message', (event) => {
-            if (event.data.type === 'UPDATE_MAX_DOWNLOADS') {
-                MAX_CONCURRENT_DOWNLOADS = event.data.value;
-                console.log('Updated max concurrent downloads:', MAX_CONCURRENT_DOWNLOADS);
-                if (MAX_CONCURRENT_DOWNLOADS > activeDownloads.size) {
-                    // 检查是否可以开始新的下载
-                    processNextDownload();
-                }
-                if (MAX_CONCURRENT_DOWNLOADS < activeDownloads.size) {
-                    // 从活跃下载中取出一个视频
-                    const videoSrc = Array.from(activeDownloads)[0];
-                    activeDownloads.delete(videoSrc);
-                    const existingState = window.downloadStates.get(videoSrc);
-                    // 重新放回等待队列
-                    downloadQueue.push(videoSrc);  // 添加到队列
-                    updateDownloadState(videoSrc, {
-                        status: 'queued',
-                        progress: 0,
-                        timeRemaining: getI18nMessage('waiting'),
-                        inProgress: true,
-                        needRestarted: true
-                    });
-                }
-            }
-        });
 };
 
 initTelegramDownloader(); 
