@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Telegram Video Downloader",
-  "version": "1.1",
+  "version": "1.2",
   "description": "Download videos from group chats on Telegram Web (supports both /k and /a versions)",
   "icons": {
     "16": "images/icon16.png",
