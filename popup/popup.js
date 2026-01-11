@@ -259,40 +259,10 @@ async function updateDownloadProgress() {
     }
 }
 
-// 添加最大下载数设置初始化函数
-async function initMaxDownloadsSelect() {
-    const select = document.getElementById('max-downloads-select');
-    if (!select) return;
-
-    // 获取保存的设置
-    const { maxConcurrentDownloads } = await chrome.storage.local.get('maxConcurrentDownloads');
-    
-    // 设置当前值（默认为1）
-    select.value = maxConcurrentDownloads || '1';
-
-    // 监听变化
-    select.addEventListener('change', async (e) => {
-        const newValue = e.target.value;
-        await chrome.storage.local.set({ maxConcurrentDownloads: newValue });
-        
-        // 通知内容脚本更新最大下载数
-        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-        if (tab) {
-            chrome.tabs.sendMessage(tab.id, {
-                action: "updateMaxDownloads",
-                value: parseInt(newValue)
-            });
-        }
-    });
-}
-
 // 初始化
 document.addEventListener('DOMContentLoaded', function() {
     // 初始化国际化
     initI18n();
-    
-    // 初始化最大下载数设置
-    initMaxDownloadsSelect();
     
     // 加载视频列表
     // loadVideoList();
@@ -325,20 +295,3 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }, 1000);
 });
-
-// 添加 popup 窗口加载监听
-window.addEventListener('load', async function() {
-    console.log('Popup window loaded');
-    
-    // 获取当前最大下载数设置
-    const maxDownloadsSelect = document.getElementById('max-downloads-select');
-    if (maxDownloadsSelect) {
-        const [tab] = await chrome.tabs.query({active: true, currentWindow: true});
-        if (tab) {
-            chrome.tabs.sendMessage(tab.id, {
-                action: "updateMaxDownloads", 
-                value: parseInt(maxDownloadsSelect.value)
-            });
-        }
-    }
-}); 
