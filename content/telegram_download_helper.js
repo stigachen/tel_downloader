@@ -104,12 +104,12 @@ window.initTelegramDownloader = function() {
     // 实际下载视频的函数
     async function downloadInChunks(url, headers, totalSize, chunkSize = 1024 * 1024 * 5) {
         // 添加下载开始的日志
-        console.log('Starting chunk download:', {
-            url,
-            totalSize,
-            chunkSize,
-            timestamp: Date.now()
-        });
+        // console.log('Starting chunk download:', {
+        //     url,
+        //     totalSize,
+        //     chunkSize,
+        //     timestamp: Date.now()
+        // });
 
         const chunks = [];
         let downloaded = 0;
@@ -232,7 +232,7 @@ window.initTelegramDownloader = function() {
         }
 
         const nextVideoSrc = downloadQueue.shift();
-        console.log('Processing next download:', nextVideoSrc);
+        // console.log('Processing next download:', nextVideoSrc);
         await window.downloadTelegramVideo(nextVideoSrc);
     }
 
@@ -241,16 +241,16 @@ window.initTelegramDownloader = function() {
         try {
             // 检查是否已经在下载
             const existingState = window.downloadStates.get(videoSrc);
-            console.log('Existing state:', existingState);
+            // console.log('Existing state:', existingState);
             // if (existingState && existingState.inProgress) {
             if (existingState && existingState.inProgress && existingState.status !== 'queued' && existingState.status !== 'error') {
-                console.log('Download already in progress');
+                // console.log('Download already in progress');
                 return true;
             }
 
             // 检查并发下载数量
             if (!canStartNewDownload()) {
-                console.log('Too many concurrent downloads, waiting...');
+                // console.log('Too many concurrent downloads, waiting...');
                 downloadQueue.push(videoSrc);  // 添加到队列
                 updateDownloadState(videoSrc, {
                     status: 'queued',
@@ -265,7 +265,7 @@ window.initTelegramDownloader = function() {
             activeDownloads.add(videoSrc);
 
             // 解析视频信息
-            console.log('Starting download process for:', videoSrc);
+            // console.log('Starting download process for:', videoSrc);
             
             let videoData = {};
             let fileName = 'video.mp4';
@@ -279,7 +279,7 @@ window.initTelegramDownloader = function() {
                 const jsonStr = decodeURIComponent(streamMatch[1]);
                 videoData = JSON.parse(jsonStr);
                 fileName = videoData.fileName || 'video.mp4';
-                console.log('Parsed k version video data:', videoData);
+                // console.log('Parsed k version video data:', videoData);
             } else if (progressiveMatch) {
                 // a版本：从document ID生成文件名
                 const docId = progressiveMatch[1];
@@ -289,7 +289,7 @@ window.initTelegramDownloader = function() {
                     documentId: docId,
                     isAVersion: true
                 };
-                console.log('Parsed a version video data:', videoData);
+                // console.log('Parsed a version video data:', videoData);
             } else {
                 throw new Error('Invalid video URL format');
             }
@@ -322,7 +322,7 @@ window.initTelegramDownloader = function() {
 
                 // 检查是否为a版本，如果是则使用tel_download_video函数
                 if (videoData.isAVersion) {
-                    console.log('Processing a version video - using tel_download_video function');
+                    // console.log('Processing a version video - using tel_download_video function');
                     
                     // 更新状态为准备中
                     updateDownloadState(videoSrc, {
@@ -339,7 +339,7 @@ window.initTelegramDownloader = function() {
                         // 监听下载进度事件
                         const progressHandler = (event) => {
                             const progress = parseInt(event.detail.progress);
-                            console.log(`Download progress: ${progress}%`);
+                            // console.log(`Download progress: ${progress}%`);
                             
                             updateDownloadState(videoSrc, {
                                 status: 'downloading',
@@ -471,11 +471,11 @@ window.initTelegramDownloader = function() {
     window.addEventListener('message', (event) => {
         if (event.data.type === 'STORE_THUMBNAIL') {
             window.videoThumbnails.set(event.data.videoSrc, event.data.thumbnailSrc);
-            console.log('Stored thumbnail:', {
-                videoSrc: event.data.videoSrc,
-                thumbnailSrc: event.data.thumbnailSrc,
-                mapSize: window.videoThumbnails.size
-            });
+            // console.log('Stored thumbnail:', {
+            //     videoSrc: event.data.videoSrc,
+            //     thumbnailSrc: event.data.thumbnailSrc,
+            //     mapSize: window.videoThumbnails.size
+            // });
             // 立即广播更新，确保 popup 能获取到最新的缩略图
             broadcastDownloadStates();
         }

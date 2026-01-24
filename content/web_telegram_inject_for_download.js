@@ -1,20 +1,20 @@
 (function () {
-    const logger = {
-      info: (message, fileName = null) => {
-        console.log(
-          `[Tel Download] ${fileName ? `${fileName}: ` : ""}${message}`
-        );
-      },
-      error: (message, fileName = null) => {
-        console.error(
-          `[Tel Download] ${fileName ? `${fileName}: ` : ""}${message}`
-        );
-      },
-    };
-    const contentRangeRegex = /^bytes (\d+)-(\d+)\/(\d+)$/;
-    const REFRESH_DELAY = 500;
+  const logger = {
+    info: (message, fileName = null) => {
+      // console.log(
+      //   `[Tel Download] ${fileName ? `${fileName}: ` : ""}${message}`
+      // );
+    },
+    error: (message, fileName = null) => {
+      console.error(
+        `[Tel Download] ${fileName ? `${fileName}: ` : ""}${message}`
+      );
+    },
+  };
+  const contentRangeRegex = /^bytes (\d+)-(\d+)\/(\d+)$/;
+  const REFRESH_DELAY = 500;
 
-const tel_download_video = (url, id='') => {
+  const tel_download_video = (url, id = '') => {
     let _blobs = [];
     let _next_offset = 0;
     let _total_size = null;
@@ -90,9 +90,9 @@ const tel_download_video = (url, id='') => {
             fileName
           );
           //定一个事件，用于传递文件的下载进度情况：
-          if(id!=''){
+          if (id != '') {
             let video_download_progress = new CustomEvent(id + "_video_download_progress", {
-              detail: {video_id: id, progress: ((_next_offset * 100) / _total_size).toFixed(0)}
+              detail: { video_id: id, progress: ((_next_offset * 100) / _total_size).toFixed(0) }
             });
             //触发事件
             document.dispatchEvent(video_download_progress);

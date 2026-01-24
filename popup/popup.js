@@ -27,14 +27,14 @@ async function loadVideoList() {
 
     try {
         const response = await chrome.tabs.sendMessage(tab.id, { action: "getVideos" });
-        console.log('Response from content script:', response);
-        
+        // console.log('Response from content script:', response);
+
         if (!response) {
             const videoList = document.getElementById('video-list');
             videoList.innerHTML = '<div class="empty-message">无法与页面通信，请刷新页面后重试</div>';
             return;
         }
-        
+
         if (!response.videos || response.videos.length === 0) {
             const videoList = document.getElementById('video-list');
             videoList.innerHTML = '<div class="empty-message">未找到视频。请确保：\n1. 群聊中有视频消息\n2. 视频已加载完成\n3. 视频在当前可见区域内</div>';
@@ -53,14 +53,14 @@ async function loadVideoList() {
 async function tryConnectToContentScript(tab, maxRetries = 3, delay = 500) {
     for (let i = 0; i < maxRetries; i++) {
         try {
-            console.log(`Attempt ${i + 1} to connect to content script`);
+            // console.log(`Attempt ${i + 1} to connect to content script`);
             const response = await chrome.tabs.sendMessage(tab.id, { action: "ping" });
             if (response && response.pong) {
-                console.log('Successfully connected to content script');
+                // console.log('Successfully connected to content script');
                 return true;
             }
         } catch (error) {
-            console.log(`Attempt ${i + 1} failed:`, error);
+            // console.log(`Attempt ${i + 1} failed:`, error);
             if (i < maxRetries - 1) {
                 await new Promise(resolve => setTimeout(resolve, delay));
             }
@@ -73,7 +73,7 @@ async function tryConnectToContentScript(tab, maxRetries = 3, delay = 500) {
 function debugLog(...args) {
     // 同时输出到 popup 的控制台和主窗口的控制台
     console.log(...args);
-    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
         if (tabs[0]) {
             chrome.tabs.sendMessage(tabs[0].id, {
                 action: "debugLog",
@@ -86,7 +86,7 @@ function debugLog(...args) {
 // 更新下载进度
 async function updateDownloadProgress() {
     try {
-        const [tab] = await chrome.tabs.query({active: true, currentWindow: true});
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
         if (!tab) {
             throw new Error('No active tab found');
         }
@@ -109,34 +109,34 @@ async function updateDownloadProgress() {
             throw new Error('Download list element not found');
         }
 
-        const response = await chrome.tabs.sendMessage(tab.id, {action: "getDownloadStates"});
+        const response = await chrome.tabs.sendMessage(tab.id, { action: "getDownloadStates" });
         downloadList.innerHTML = '';
-        
+
         if (!response) {
             downloadList.innerHTML = `<div class="empty-message">${chrome.i18n.getMessage("communicationError")}</div>`;
             return;
         }
-        
+
         if (!response.states || response.states.length === 0) {
             downloadList.innerHTML = `<div class="empty-message">${chrome.i18n.getMessage("noDownloads")}</div>`;
             return;
         }
 
         // 打印接收到的状态信息
-        console.log('Received download states in popup:', {
-            hasResponse: !!response,
-            states: response?.states?.map(state => ({
-                fileName: state.fileName,
-                progress: state.progress,
-                hasThumbnail: !!state.thumbnail,
-                thumbnailUrl: state.thumbnail
-            }))
-        });
+        // console.log('Received download states in popup:', {
+        //     hasResponse: !!response,
+        //     states: response?.states?.map(state => ({
+        //         fileName: state.fileName,
+        //         progress: state.progress,
+        //         hasThumbnail: !!state.thumbnail,
+        //         thumbnailUrl: state.thumbnail
+        //     }))
+        // });
 
         response.states.forEach(state => {
             const item = document.createElement('div');
             item.className = 'download-item';
-            
+
             // 使用固定的视频图标和文件名
             const thumbnail = document.createElement('div');
             thumbnail.className = 'download-thumbnail';
@@ -166,7 +166,7 @@ async function updateDownloadProgress() {
                     ">${state.fileName}</div>
                 </div>
             `;
-            
+
             const info = document.createElement('div');
             info.className = 'download-info';
 
@@ -176,19 +176,19 @@ async function updateDownloadProgress() {
 
             const status = document.createElement('div');
             status.className = 'download-status';
-            
+
             if (state.status === 'error') {
                 // 创建状态和重试按钮的容器
                 const statusContainer = document.createElement('div');
                 statusContainer.style.display = 'flex';
                 statusContainer.style.justifyContent = 'space-between';
                 statusContainer.style.alignItems = 'center';
-                
+
                 // 错误状态文本
                 const errorText = document.createElement('span');
                 errorText.textContent = chrome.i18n.getMessage("downloadFailed");
                 errorText.style.color = '#ff4444';
-                
+
                 // 重试按钮
                 const retryButton = document.createElement('button');
                 retryButton.textContent = chrome.i18n.getMessage("retry");
@@ -202,17 +202,17 @@ async function updateDownloadProgress() {
                     cursor: pointer;
                     margin-left: 8px;
                 `;
-                
+
                 // 添加重试功能
                 retryButton.onclick = async () => {
                     try {
-                        const [tab] = await chrome.tabs.query({active: true, currentWindow: true});
+                        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
                         if (!tab) return;
-                        
+
                         retryButton.disabled = true;
                         retryButton.style.opacity = '0.7';
                         retryButton.textContent = chrome.i18n.getMessage("retrying");
-                        
+
                         await chrome.tabs.sendMessage(tab.id, {
                             action: "downloadVideo",
                             url: state.videoSrc
@@ -230,7 +230,7 @@ async function updateDownloadProgress() {
                         retryButton.textContent = chrome.i18n.getMessage("retry");
                     }
                 };
-                
+
                 statusContainer.appendChild(errorText);
                 statusContainer.appendChild(retryButton);
                 status.appendChild(statusContainer);
@@ -260,13 +260,13 @@ async function updateDownloadProgress() {
 }
 
 // 初始化
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // 初始化国际化
     initI18n();
-    
+
     // 加载视频列表
     // loadVideoList();
-    
+
     // 初始化下载进度
     updateDownloadProgress();
 
@@ -276,11 +276,11 @@ document.addEventListener('DOMContentLoaded', function() {
             // 切换按钮状态
             document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
             button.classList.add('active');
-            
+
             // 切换面板
             document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
             document.getElementById(button.dataset.tab).classList.add('active');
-            
+
             // 如果切换到下载进度页，立即更新进度
             if (button.dataset.tab === 'downloads') {
                 updateDownloadProgress();
@@ -289,7 +289,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // 定期更新下载进度
-    setInterval(function() {
+    setInterval(function () {
         if (document.querySelector('[data-tab="downloads"]').classList.contains('active')) {
             updateDownloadProgress();
         }
